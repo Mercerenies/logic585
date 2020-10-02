@@ -9,8 +9,10 @@ open import Function.Definitions using (Injective)
 open import Data.List.Properties
 import Data.List.Membership.Propositional as PropMembership
 import Data.List.Membership.DecPropositional as DecPropMembership
+open import Relation.Unary using (Pred)
 open import Data.List.Relation.Unary.Any hiding (map)
 import Data.List.Relation.Unary.Any.Properties
+open import Data.List.Relation.Unary.All as All using (All)
 open import Data.List.Relation.Binary.Subset.Propositional
 open import Data.Bool
 open import Relation.Nullary using (Dec; yes; no)
@@ -30,6 +32,22 @@ module _ {a} {A : Set a} where
 
   ∈≡lemma₂ : {ℓ ℓ₁ : List A} {x : A} → x ∈ ℓ → ℓ ≡ ℓ₁ → x ∈ ℓ₁
   ∈≡lemma₂ elt refl = elt
+
+module _ {a} {p} {A : Set a} where
+  open PropMembership {A = A}
+
+  all-elt : {ℓ : List A} {x : A} {P : Pred A p} → x ∈ ℓ → All P ℓ → P x
+  all-elt (here refl) (fst All.∷ rest) = fst
+  all-elt (there elt) (fst All.∷ rest) = all-elt elt rest
+
+module _ {a} {A : Set a} where
+  open PropMembership {A = A}
+
+  all≡lemma : {ℓ : List A} {f g : A → Bool} → (∀ (x : A) → (x ∈ ℓ) → f x ≡ g x) → all f ℓ ≡ all g ℓ
+  all≡lemma {[]} _ = refl
+  all≡lemma {x ∷ ℓ} {f} {g} eq with f x | g x | eq x (here refl) | all≡lemma {ℓ} λ x eq₀ → eq x (there eq₀)
+  all≡lemma {x ∷ ℓ} {f} {g} eq | false | false | refl | _ = refl
+  all≡lemma {x ∷ ℓ} {f} {g} eq | true | true | refl | eq₂ = eq₂
 
 module _ {a b} {A : Set a} {B : Set b} where
 
